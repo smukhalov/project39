@@ -819,5 +819,7 @@ void BusManager::AddEdge(const Edge& edge){
 		return;
 	}
 
-	edges.insert({edge.from, edge.to, edge.distance, edge.route_item_type});
+	auto nh = edges.extract(it);
+	nh.value() = edge;
+	edges.insert(move(nh));
 }
