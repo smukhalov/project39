@@ -192,6 +192,31 @@ BusManager& BusManager::Read(std::istream& in){
 		}
 	}
 
+	/*for(const auto& [stop_name, bus_name_set]: stop_to_buses){
+		if(bus_name_set.size() < 2){
+			continue;
+		}
+
+		if(stop_name != "Biryulyovo Tovarnaya"){
+			continue;
+		}
+
+		for(const std::string& bus_name: bus_name_set){
+			const Bus& bus = buses.at(bus_name);
+			for(const auto& stop: bus.stops){
+				if(stop.stop_name != stop_name){
+					continue;
+				}
+
+				vertex_to_bus_stop[last_init_id].insert({bus_name, stop.stop_id, stop_name});
+				bus_stop_to_vertex.insert({{bus_name, stop.stop_id, stop_name}, last_init_id});
+				stop_to_bus_vertex[stop_name].insert({bus_name, last_init_id});
+			}
+		}
+	}*/
+
+	last_init_id++;
+
 	//Заполним ребра на основе первичных данных
 	for(const auto& [_, bus]: buses){
 		if(bus.route_type == RouteType::Line){
@@ -385,6 +410,8 @@ Route BusManager::BuildBestRoute(const RouteCommand& command,
 	std::vector<Graph::EdgeId> route_edges;
 	for(const Graph::VertexId vertex_from: vertex_from_list){
 		for(const Graph::VertexId vertex_to: vertex_to_list){
+			std::cout << "Ищем маршрут: " << vertex_from << " - " << vertex_to << std::endl;
+
 			auto route_info = router.BuildRoute(vertex_from, vertex_to);
 			if(!route_info || route_info->edge_count < 1){
 				continue;
@@ -700,7 +727,7 @@ void BusManager::FillEdgesRound(const Bus& bus){
 		auto it_stop_2_1 = stop_distances.find({stop_name_2, stop_name_1});
 
 		if(it_stop_1_2 == it_end && it_stop_2_1 == it_end){
-			throw std::invalid_argument("FillEdgesLine. distance [" + stop_name_1 + ", " + stop_name_2 + "] not found");
+			throw std::invalid_argument("FillEdgesRound. distance [" + stop_name_1 + ", " + stop_name_2 + "] not found");
 		}
 
 		double distance_1_2 = -1.0;
@@ -809,9 +836,13 @@ void BusManager::FillEdgesRound(const Bus& bus){
 }
 
 void BusManager::AddEdge(const Edge& edge){
+	if(edge.from == edge.to){
+		return;
+	}
+
 	auto it = edges.find({edge.from, edge.to});
 	if(it == edges.end()){
-		edges.insert({edge.from, edge.to, edge.distance, edge.route_item_type});
+		edges.insert(edge);
 		return;
 	}
 

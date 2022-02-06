@@ -117,6 +117,6 @@ private:
 	void FillEdgesRound(const Bus& bus);
 
 	double GetDistance(std::vector<std::string>::const_iterator it) const;
-	void AddEdge(const Edge& edge);
 
+	void AddEdge(const Edge& edge);
 };
